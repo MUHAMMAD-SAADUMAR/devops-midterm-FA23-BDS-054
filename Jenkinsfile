@@ -17,10 +17,8 @@ pipeline {
         CONTAINER  = 'midterm-api'
         APP_PORT   = '8000'
         PUBLIC_URL = 'http://52.220.47.207:8000'
-        MAIL_TO    = 'qasimalik@gmail.com'
         MAIL_FROM  = 'gondalmuhammadsaadumar2@gmail.com'
-        OWNER_NAME = 'Muhammad Saad Umar'
-        OWNER_GH   = 'muhammad-saadumar'
+        MAIL_BCC   = 'gondalmuhammadsaadumar2@gmail.com'
     }
 
     stages {
@@ -119,12 +117,8 @@ pipeline {
                     authorEmail = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
                     authorName  = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
                 }
-                // My own commits: mail only me. Anyone else (the grader): also mail the instructor.
-                def ownCommit = authorName == env.OWNER_NAME ||
-                                authorEmail.equalsIgnoreCase(env.MAIL_FROM) ||
-                                authorEmail.toLowerCase().contains(env.OWNER_GH)
-                def recipients = ownCommit ? "${authorEmail}, cc:${env.MAIL_FROM}"
-                                           : "${env.MAIL_TO}, ${authorEmail}, cc:${env.MAIL_FROM}"
+                // Mail whoever made the commit; I always get a blind copy.
+                def recipients = authorEmail ? "${authorEmail}, bcc:${env.MAIL_BCC}" : env.MAIL_BCC
                 emailext(
                     to: recipients,
                     from: env.MAIL_FROM,
