@@ -19,6 +19,8 @@ pipeline {
         PUBLIC_URL = 'http://52.220.47.207:8000'
         MAIL_TO    = 'qasimalik@gmail.com'
         MAIL_FROM  = 'gondalmuhammadsaadumar2@gmail.com'
+        OWNER_NAME = 'Muhammad Saad Umar'
+        OWNER_GH   = 'muhammad-saadumar'
     }
 
     stages {
@@ -111,15 +113,27 @@ pipeline {
         always {
             script {
                 def metrics = fileExists('artifacts/metrics.json') ? readFile('artifacts/metrics.json') : 'metrics.json was not produced'
+                def authorEmail = ''
+                def authorName = ''
+                if (fileExists('.git')) {
+                    authorEmail = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
+                    authorName  = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
+                }
+                // My own commits: mail only me. Anyone else (the grader): also mail the instructor.
+                def ownCommit = authorName == env.OWNER_NAME ||
+                                authorEmail.equalsIgnoreCase(env.MAIL_FROM) ||
+                                authorEmail.toLowerCase().contains(env.OWNER_GH)
+                def recipients = ownCommit ? "${authorEmail}, cc:${env.MAIL_FROM}"
+                                           : "${env.MAIL_TO}, ${authorEmail}, cc:${env.MAIL_FROM}"
                 emailext(
-                    to: "${env.MAIL_TO}, cc:${env.MAIL_FROM}",
+                    to: recipients,
                     from: env.MAIL_FROM,
                     subject: "[${env.STUDENT_ID}] MIDTERM-${env.STUDENT_ID} build #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
                     mimeType: 'text/plain',
                     body: """Student Reg No: ${env.STUDENT_ID}
 Job: ${env.JOB_NAME} #${env.BUILD_NUMBER}
 Result: ${currentBuild.currentResult}
-Commit: ${env.GIT_COMMIT}
+Commit: ${env.GIT_COMMIT} by ${authorName} <${authorEmail}>
 
 Metrics:
 ${metrics}
