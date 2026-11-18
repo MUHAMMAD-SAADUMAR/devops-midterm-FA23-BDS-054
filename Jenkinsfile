@@ -118,7 +118,9 @@ pipeline {
                     authorName  = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
                 }
                 // Mail whoever made the commit; I always get a blind copy.
-                def recipients = authorEmail ? "${authorEmail}, bcc:${env.MAIL_BCC}" : env.MAIL_BCC
+                // GitHub "private email" noreply addresses cannot receive mail, so skip them.
+                def deliverable = authorEmail && !authorEmail.toLowerCase().endsWith('@users.noreply.github.com')
+                def recipients = deliverable ? "${authorEmail}, bcc:${env.MAIL_BCC}" : env.MAIL_BCC
                 emailext(
                     to: recipients,
                     from: env.MAIL_FROM,
