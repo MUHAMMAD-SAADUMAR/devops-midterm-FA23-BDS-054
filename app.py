@@ -1,3 +1,4 @@
+"""Testing commit"""
 """FastAPI server for the deployed model. Train first to create artifacts."""
 import json
 from pathlib import Path
@@ -43,3 +44,4 @@ def predict(request: PredictionRequest):
     probabilities = bundle['model'].predict_proba(df)[:, 1]
     predictions = (probabilities >= .5).astype(int)
     return {'predictions': predictions.tolist(), 'probabilities': probabilities.round(6).tolist()}
+    
