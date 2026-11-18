@@ -1,4 +1,4 @@
-"""Testing commit"""
+"""Testing commit 2"""
 """FastAPI server for the deployed model. Train first to create artifacts."""
 import json
 from pathlib import Path
