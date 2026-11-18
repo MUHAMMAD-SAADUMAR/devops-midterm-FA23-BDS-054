@@ -1,0 +1,8 @@
+.git
+.venv
+.cache
+tests
+dataset
+__pycache__
+.pytest_cache
+Jenkinsfile
